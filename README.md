@@ -6,3 +6,4 @@ Also, install keras_retinanet with
 ```
 bash install_keras_retinanet.sh
 ```
+Finally, grab an pre-trained RetinaNet models from https://github.com/fizyr/keras-retinanet/releases
