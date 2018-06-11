@@ -1,8 +1,6 @@
 #!/bin/bash
 
-declare -a videos_to_process=('./data/034.MOV' \
-                              './data/093.MOV' \
-                              './data/103.MOV')
+declare -a videos_to_process=('./data/123.MOV')
 
 script_dir="$( cd -P "$( dirname "$0" )" && pwd )"
 process_video_script_dir='./detect_video.py'

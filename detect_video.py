@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import sys
 
@@ -9,6 +10,7 @@ import tensorflow as tf
 from keras_retinanet import models
 from keras_retinanet.utils.colors import label_color
 from keras_retinanet.utils.image import preprocess_image, resize_image
+import pandas as pd
 from keras_retinanet.utils.visualization import draw_box, draw_caption
 
 LABELS_T0_NAMES = {0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle', 4: 'airplane', 5: 'bus', 6: 'train',
@@ -27,6 +29,8 @@ LABELS_T0_NAMES = {0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle', 4: 'air
 
 MODEL = None
 BOX_AREA_RATIO_TO_IGNORE = 0.2
+CONFIDENCE_THRESHOLD = 0.4
+MAX_CLASS_ID = 20
 
 
 def main():
@@ -60,16 +64,31 @@ def process_frame(frame):
     boxes, scores, labels, = MODEL.predict_on_batch(np.expand_dims(frame, axis=0))
     boxes /= scale
 
+    box_json_array = []
+
     for box, score, label in zip(boxes[0], scores[0], labels[0]):
         b = box.astype(int)
-        box_area = np.abs(b[2]-b[0]) * np.abs(b[3]-b[1])
-        if score < 0.5 or box_area > (frame_area * BOX_AREA_RATIO_TO_IGNORE):
+        box_area = np.abs(b[2] - b[0]) * np.abs(b[3] - b[1])
+        if score < CONFIDENCE_THRESHOLD or box_area > (frame_area * BOX_AREA_RATIO_TO_IGNORE) or label > MAX_CLASS_ID:
             break
         color = label_color(label)
         draw_box(draw, b, color=color)
         caption = '{} {:.3f}'.format(LABELS_T0_NAMES[label], score)
         draw_caption(draw, b, caption)
-    return draw
+
+        box_json_array.append({
+            'label': caption,
+            'topLeft': [int(b[0]), int(b[1])],
+            'bottomRight': [int(b[2]), int(b[3])]
+        })
+
+    return draw, box_json_array
+
+
+def write_dict_as_json(filename, dict_obj):
+    json_obj = json.dumps(dict_obj)
+    with open(filename, 'w') as f:
+        f.write(json_obj)
 
 
 def display_img(img):
@@ -96,13 +115,15 @@ def process_video(video, n_frames, output):
             break
 
         if count % n_frames == 0:
-            processed_frame = process_frame(frame)
+            processed_frame, box_json_array = process_frame(frame)
 
             # Show processed frame
             # if not display_img(processed_frame):
             #     break
 
-            cv2.imwrite(os.path.join(output, 'frame{:d}.jpg'.format(count)), processed_frame)
+            base_filename = 'frame{:05d}'.format(count)
+            cv2.imwrite(os.path.join(output, f'{base_filename}.jpg'), processed_frame)
+            write_dict_as_json(os.path.join(output, f'{base_filename}.json'), box_json_array)
 
         print(f'Processed {count}/{total_frames} frames from {video}')
         count += 1
