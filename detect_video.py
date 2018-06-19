@@ -35,6 +35,7 @@ MAX_CLASS_ID = 20
 
 def main():
     global MODEL
+
     parser = argparse.ArgumentParser(description='This program receives a video as an input in order to look through it'
                                                  ' and process every Nth frame to detect objects.')
     parser.add_argument('--model', '-m', help='The path of the RetinaNet model to use for inference.', required=True)
@@ -43,6 +44,7 @@ def main():
     parser.add_argument('--n-frames', '-n', help='Process every N\'th frame.', default=1, type=int)
     args = parser.parse_args()
     MODEL = models.load_model(args.model, backbone_name='resnet50')
+
     process_video(args.video, args.n_frames, args.output)
 
 
@@ -103,6 +105,9 @@ def process_video(video, n_frames, output):
     camera = cv2.VideoCapture(video)
     success, frame = camera.read()
 
+    processed_dir = os.path.join(output, 'processed')
+    original_dir = os.path.join(output, 'original')
+
     if not success:
         print(f'{video} is not found or it cannot be read.')
         sys.exit(1)
@@ -115,6 +120,8 @@ def process_video(video, n_frames, output):
             break
 
         if count % n_frames == 0:
+            cv2.imwrite(os.path.join(original_dir, f'{base_filename}.jpg'), frame)
+
             processed_frame, box_json_array = process_frame(frame)
 
             # Show processed frame
@@ -122,8 +129,8 @@ def process_video(video, n_frames, output):
             #     break
 
             base_filename = 'frame{:05d}'.format(count)
-            cv2.imwrite(os.path.join(output, f'{base_filename}.jpg'), processed_frame)
-            write_dict_as_json(os.path.join(output, f'{base_filename}.json'), box_json_array)
+            cv2.imwrite(os.path.join(processed_dir, f'{base_filename}.jpg'), processed_frame)
+            write_dict_as_json(os.path.join(processed_dir, f'{base_filename}.json'), box_json_array)
 
         print(f'Processed {count}/{total_frames} frames from {video}')
         count += 1
