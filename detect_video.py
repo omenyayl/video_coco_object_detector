@@ -108,6 +108,11 @@ def process_video(video, n_frames, output):
     processed_dir = os.path.join(output, 'processed')
     original_dir = os.path.join(output, 'original')
 
+    if not os.path.exists(processed_dir):
+        os.mkdir(processed_dir)
+    if not os.path.exists(original_dir):
+        os.mkdir(original_dir)
+
     if not success:
         print(f'{video} is not found or it cannot be read.')
         sys.exit(1)
