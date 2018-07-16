@@ -1,4 +1,4 @@
-#7/16/18 11:30
+#7/16/18 12:06
 #Converts a bunch of retinanet classifications in a folder into one dataset annotator json file
 import os
 import json
@@ -16,23 +16,24 @@ def getObjects(fileName):
         rectangles += [a]
     return rectangles
 
-def convertAll():
+def convertAll(filesDir):
     frames = []
-    for fileName in os.listdir(os.getcwd()):
+    for fileName in os.listdir(filesDir):
         if(fileName[-5:] == ".json"):
             itemName = os.path.splitext(fileName)[0]+".jpg"
-            frame = {"src": os.path.join(os.getcwd(), itemName)}
+            frame = {"src": os.path.join(filesDir, itemName)}
             frame.update({"lines": []})
-            frame.update({"rectangles": getObjects(fileName)})
+            frame.update({"rectangles": getObjects(os.path.join(filesDir, fileName))})
             frame.update({"polygons": []})
             frames += [frame]
     output = json.dumps({"frames": frames}, indent=4)
     return output
 
 parser = argparse.ArgumentParser(description="This will convert a lot of retinanet annotation json files into one DSA json file")
+parser.add_argument("directory")
 parser.add_argument('--output', '-o', help="The name of the DSA json file to output to")
 args = parser.parse_args()
-data = convertAll()
+data = convertAll(args.directory)
 outFileName = args.output
 outFile = open(outFileName, 'w')
 outFile.write(data)
