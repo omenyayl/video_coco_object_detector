@@ -35,6 +35,6 @@ process_video () {
 
 for video in $videos_dir/*
 do
-	echo "Processing $video"
+    echo "Processing $video"
     process_video "${video}"
 done
