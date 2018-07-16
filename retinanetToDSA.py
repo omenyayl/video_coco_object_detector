@@ -16,12 +16,12 @@ def getObjects(fileName):
         rectangles += [a]
     return rectangles
 
-def convertAll(filesDir):
+def convertAll(filesDir, location):
     frames = []
     for fileName in os.listdir(filesDir):
         if(fileName[-5:] == ".json"):
             itemName = os.path.splitext(fileName)[0]+".jpg"
-            frame = {"src": os.path.join(filesDir, itemName)}
+            frame = {"src": os.path.join(location, itemName)}
             frame.update({"lines": []})
             frame.update({"rectangles": getObjects(os.path.join(filesDir, fileName))})
             frame.update({"polygons": []})
@@ -31,9 +31,10 @@ def convertAll(filesDir):
 
 parser = argparse.ArgumentParser(description="This will convert a lot of retinanet annotation json files into one DSA json file")
 parser.add_argument("directory")
+parser.add_argument('--input', '-i', help="The folder of the input images for the labeler")
 parser.add_argument('--output', '-o', help="The name of the DSA json file to output to")
 args = parser.parse_args()
-data = convertAll(args.directory)
+data = convertAll(args.directory, args.input)
 outFileName = args.output
 outFile = open(outFileName, 'w')
 outFile.write(data)
