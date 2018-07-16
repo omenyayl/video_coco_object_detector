@@ -10,9 +10,9 @@ def getObjects(fileName):
     annotations = json.loads(inFile.read())
     for annotation in annotations:
         a = {}
-        a.update({"topLeft": {"x": annotation['topLeft'][1], "y": annotation['topLeft'][0]}})
-        a.update({"bottomRight": {"x": annotation['bottomRight'][1], "y": annotation['bottomRight'][0]}})
-        a.update({"label": annotation['label'].split()[0]})
+        a.update({"topLeft": {"x": annotation['topLeft'][0], "y": annotation['topLeft'][1]}})
+        a.update({"bottomRight": {"x": annotation['bottomRight'][0], "y": annotation['bottomRight'][1]}})
+        a.update({"label": " ".join(annotation['label'].split()[:-1])})
         rectangles += [a]
     return rectangles
 

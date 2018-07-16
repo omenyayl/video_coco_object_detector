@@ -138,6 +138,7 @@ def process_video(video, n_frames, output):
             break
 
         if count % n_frames == 0:
+            base_filename = 'frame{:05d}'.format(count)
             cv2.imwrite(os.path.join(original_dir, f'{base_filename}.jpg'), frame)
 
             processed_frame, box_json_array = process_frame(frame)
@@ -146,7 +147,6 @@ def process_video(video, n_frames, output):
             # if not display_img(processed_frame):
             #     break
 
-            base_filename = 'frame{:05d}'.format(count)
             cv2.imwrite(os.path.join(processed_dir, f'{base_filename}.jpg'), processed_frame)
             write_dict_as_json(os.path.join(processed_dir, f'{base_filename}.json'), box_json_array)
 
